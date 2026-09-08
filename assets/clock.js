@@ -28,6 +28,7 @@
   const timeEl = document.getElementById("time");
   const msEl = document.getElementById("milliseconds");
   const dateEl = document.getElementById("date");
+  const tzEl = document.getElementById("tz-name");
   const statusEl = document.getElementById("sync-status");
   const dotEl = document.getElementById("sync-dot");
   const offsetEl = document.getElementById("stat-offset");
@@ -41,12 +42,28 @@
   let retryDelay = 1000;
   let synced = false;
 
+  // Format in the viewer's own local time zone (no fixed timeZone option).
   const timeFmt = new Intl.DateTimeFormat(LOCALE, {
-    timeZone: "Asia/Tokyo", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
   });
   const dateFmt = new Intl.DateTimeFormat(LOCALE, {
-    timeZone: "Asia/Tokyo", year: "numeric", month: "long", day: "numeric", weekday: "short",
+    year: "numeric", month: "long", day: "numeric", weekday: "short",
   });
+
+  // Show the local time zone's friendly name (falls back to the IANA id).
+  function localZoneLabel() {
+    const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    try {
+      const parts = new Intl.DateTimeFormat(LOCALE, { timeZoneName: "long" }).formatToParts(new Date());
+      const name = parts.find((p) => p.type === "timeZoneName");
+      if (name && name.value) return name.value;
+    } catch (e) { /* ignore */ }
+    return zone;
+  }
+  if (tzEl) {
+    tzEl.textContent = localZoneLabel();
+    tzEl.title = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  }
 
   function render() {
     const now = new Date(Date.now() + offset);
