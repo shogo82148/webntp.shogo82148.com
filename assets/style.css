@@ -118,6 +118,11 @@ h2.section-title {
 .nav-links a { color: var(--muted); font-size: 0.9rem; font-weight: 550; white-space: nowrap; }
 .nav-links a:hover { color: var(--ink); text-decoration: none; }
 .nav-links a.active { color: var(--ink); }
+.nav-links a.lang-switch {
+  font-family: var(--mono); font-size: 0.76rem; font-weight: 600; letter-spacing: 0.06em;
+  color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 0.2rem 0.6rem;
+}
+.nav-links a.lang-switch:hover { color: var(--accent); border-color: var(--accent); }
 @media (max-width: 620px) {
   .nav-links { gap: 0.95rem; }
   .nav-links a { font-size: 0.82rem; }

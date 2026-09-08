@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------------
    clock.js — drives the landing-page live demo:
    a WebNTP-synchronised digital clock (Japan Standard Time) with live
-   offset / delay / server-id readouts.
+   offset / delay / server-id readouts. Localised via <html lang>.
 --------------------------------------------------------------------------- */
 (function () {
   "use strict";
@@ -9,6 +9,21 @@
   // The public WebNTP server that backs this site.
   const HOST = "webntp.shogo82148.com";
   const WS_URL = `wss://${HOST}/websocket`;
+
+  const LANG = (document.documentElement.lang || "ja").startsWith("en") ? "en" : "ja";
+  const LOCALE = LANG === "en" ? "en-US" : "ja-JP";
+  const T = {
+    ja: {
+      syncing: "同期中…",
+      synced: "WebSocket で同期済み",
+      retry: (s) => `再接続まで ${s}秒`,
+    },
+    en: {
+      syncing: "Syncing…",
+      synced: "Synced over WebSocket",
+      retry: (s) => `Reconnecting in ${s}s`,
+    },
+  }[LANG];
 
   const timeEl = document.getElementById("time");
   const msEl = document.getElementById("milliseconds");
@@ -26,10 +41,10 @@
   let retryDelay = 1000;
   let synced = false;
 
-  const timeFmt = new Intl.DateTimeFormat("ja-JP", {
+  const timeFmt = new Intl.DateTimeFormat(LOCALE, {
     timeZone: "Asia/Tokyo", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
   });
-  const dateFmt = new Intl.DateTimeFormat("ja-JP", {
+  const dateFmt = new Intl.DateTimeFormat(LOCALE, {
     timeZone: "Asia/Tokyo", year: "numeric", month: "long", day: "numeric", weekday: "short",
   });
 
@@ -69,13 +84,13 @@
   }
 
   function synchronize() {
-    if (!synced) setStatus("同期中…", "live");
+    if (!synced) setStatus(T.syncing, "live");
     getServerTime()
       .then((result) => {
         offset = result.offset;
         retryDelay = 1000;
         synced = true;
-        setStatus("WebSocket で同期済み", "live");
+        setStatus(T.synced, "live");
         if (offsetEl) offsetEl.innerHTML = fmtMs(result.offset);
         if (delayEl) delayEl.innerHTML = fmtMs(result.delay);
         if (serverEl && result.response) serverEl.textContent = result.response.id;
@@ -86,7 +101,7 @@
         const retryAt = Date.now() + wait;
         const tick = () => {
           const s = Math.max(0, Math.ceil((retryAt - Date.now()) / 1000));
-          setStatus(`再接続まで ${s}秒`, "err");
+          setStatus(T.retry(s), "err");
         };
         tick();
         const iv = setInterval(tick, 250);
