@@ -215,7 +215,7 @@ offset = st - end + delay / 2</code></pre>
         <!-- CORS -->
         <div class="api-block">
           <h2 id="cors">CORS</h2>
-          <p>すべてのエンドポイントは <code class="inline">Access-Control-Allow-Origin: *</code> を返すため、任意のオリジンのブラウザから利用できます。Time over HTTPS では <code class="inline">Access-Control-Expose-Headers: X-Httpstime</code> により、JavaScript からヘッダーを読み取れます。応答はいずれも <code class="inline">Cache-Control: no-cache</code> でキャッシュされません。</p>
+          <p>すべてのエンドポイントは <code class="inline">Access-Control-Allow-Origin: *</code> を返すため、任意のオリジンのブラウザから利用できます。Time over HTTPS では <code class="inline">Access-Control-Expose-Headers: X-Httpstime</code> により、JavaScript からヘッダーを読み取れます。応答はいずれも <code class="inline">Cache-Control: no-cache</code> を返します。これはキャッシュへの保存自体は許可しますが、再利用の前にサーバーへの再検証を必須とするもので、「キャッシュしない」という意味ではありません。</p>
         </div>
 
         <p style="margin-top:2rem"><a class="btn" href="./">← トップに戻る</a></p>

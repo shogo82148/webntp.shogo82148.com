@@ -215,7 +215,7 @@ offset = st - end + delay / 2</code></pre>
         <!-- CORS -->
         <div class="api-block">
           <h2 id="cors">CORS</h2>
-          <p>Every endpoint returns <code class="inline">Access-Control-Allow-Origin: *</code>, so it can be used from a browser on any origin. For Time over HTTPS, <code class="inline">Access-Control-Expose-Headers: X-Httpstime</code> lets JavaScript read the header. All responses carry <code class="inline">Cache-Control: no-cache</code> and are not cached.</p>
+          <p>Every endpoint returns <code class="inline">Access-Control-Allow-Origin: *</code>, so it can be used from a browser on any origin. For Time over HTTPS, <code class="inline">Access-Control-Expose-Headers: X-Httpstime</code> lets JavaScript read the header. All responses carry <code class="inline">Cache-Control: no-cache</code>, which permits a cache to store the response but requires it to revalidate with the server before reuse — it does not mean the response is never cached.</p>
         </div>
 
         <p style="margin-top:2rem"><a class="btn" href="./">← Back to demo</a></p>
