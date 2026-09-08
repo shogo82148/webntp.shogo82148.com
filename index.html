@@ -1,73 +1,58 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#030707">
-  <title>WebNTP — HTTP/WebSocket 越しの時刻同期</title>
-  <meta name="description" content="WebNTP は HTTP / WebSocket 越しに時刻を配信する NTP ライクなサービスです。ブラウザからサーバー時刻に同期するデジタル時計のライブデモ。">
+  <title>WebNTP</title>
+  <meta name="description" content="WebNTP — an NTP-like service that distributes time over HTTP / WebSocket.">
+  <link rel="alternate" hreflang="ja" href="https://webntp.shogo82148.com/ja/">
+  <link rel="alternate" hreflang="en" href="https://webntp.shogo82148.com/en/">
+  <link rel="alternate" hreflang="x-default" href="https://webntp.shogo82148.com/">
+  <!-- Redirect to the language variant that best matches the browser. -->
+  <script>
+    (function () {
+      try {
+        var langs = (navigator.languages && navigator.languages.length)
+          ? navigator.languages
+          : [navigator.language || navigator.userLanguage || "en"];
+        var prefersJa = langs.some(function (l) {
+          return (l || "").toLowerCase().indexOf("ja") === 0;
+        });
+        location.replace(prefersJa ? "/ja/" : "/en/");
+      } catch (e) {
+        location.replace("/en/");
+      }
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./assets/style.css?v=2">
+  <link rel="stylesheet" href="./assets/style.css?v=3">
+  <style>
+    .lang-pick { min-height: 100svh; display: flex; align-items: center; justify-content: center; padding: 2rem; }
+    .lang-card { width: min(92vw, 420px); padding: clamp(1.8rem, 5vw, 2.6rem); text-align: center; }
+    .lang-card .brand { justify-content: center; font-size: 1.15rem; margin-bottom: 1.4rem; }
+    .lang-card p { margin: 0 0 1.6rem; color: var(--muted); }
+    .lang-card .choices { display: flex; gap: 0.7rem; justify-content: center; flex-wrap: wrap; }
+    .lang-card .btn { min-width: 8rem; justify-content: center; }
+  </style>
 </head>
 <body>
-  <!-- ===== nav ===== -->
-  <nav class="nav">
-    <div class="nav-inner">
-      <a class="brand" href="./">
+  <main class="lang-pick">
+    <div class="panel lang-card">
+      <span class="brand">
         <span class="logo" aria-hidden="true">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
         </span>
         Web<b>NTP</b>
-      </a>
-      <div class="nav-links">
-        <a href="./api.html">API 仕様</a>
-        <a href="https://github.com/shogo82148/go-webntp" target="_blank" rel="noopener">GitHub ↗</a>
+      </span>
+      <p>Redirecting to your language… / お使いの言語へ移動しています…</p>
+      <div class="choices">
+        <a class="btn primary" href="./ja/" hreflang="ja">日本語</a>
+        <a class="btn" href="./en/" hreflang="en">English</a>
       </div>
     </div>
-  </nav>
-
-  <!-- ===== digital clock demo ===== -->
-  <main class="clock-stage">
-    <div class="clock-intro">
-      <p class="eyebrow">NTP over HTTP / WebSocket</p>
-      <p class="clock-tagline">ブラウザから<span class="accent">正確な時刻</span>に同期する。</p>
-    </div>
-
-    <div class="panel clock-card" id="demo">
-      <p class="tz"><span id="sync-dot" class="dot"></span> Japan Standard Time</p>
-      <div class="clock">
-        <time id="time" datetime="">00:00:00</time><span id="milliseconds" aria-label="ミリ秒">000</span>
-      </div>
-      <p id="date">時刻を取得しています…</p>
-      <div class="clock-stats">
-        <div class="stat"><p class="k">オフセット</p><p class="v" id="stat-offset">—</p></div>
-        <div class="stat"><p class="k">往復遅延</p><p class="v" id="stat-delay">—</p></div>
-        <div class="stat"><p class="k">サーバー</p><p class="v" id="stat-server" style="font-size:.8rem">—</p></div>
-      </div>
-      <p class="sync-row"><span id="sync-status">接続中…</span></p>
-    </div>
-
-    <p class="clock-hint">
-      WebSocket で公開サーバー <code class="inline">webntp.shogo82148.com</code> に同期しています。
-      各プロトコルを試せるライブデモと詳細は <a href="./api.html">API 仕様</a> をご覧ください。
-    </p>
   </main>
-
-  <!-- ===== footer ===== -->
-  <footer class="site">
-    <div class="wrap foot-inner">
-      <div>© 2026 ICHINOSE Shogo — Released under the MIT License</div>
-      <div class="foot-links">
-        <a href="./api.html">API 仕様</a>
-        <a href="https://github.com/shogo82148/go-webntp" target="_blank" rel="noopener">GitHub</a>
-        <a href="https://pkg.go.dev/github.com/shogo82148/go-webntp" target="_blank" rel="noopener">pkg.go.dev</a>
-      </div>
-    </div>
-  </footer>
-
-  <script src="./assets/webntp.js?v=2"></script>
-  <script src="./assets/clock.js?v=2"></script>
 </body>
 </html>

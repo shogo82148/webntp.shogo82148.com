@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#030707">
+  <title>WebNTP — Time sync over HTTP/WebSocket</title>
+  <meta name="description" content="WebNTP is an NTP-like service that distributes time over HTTP / WebSocket. A live digital-clock demo that syncs your browser to the server clock.">
+  <link rel="alternate" hreflang="ja" href="https://webntp.shogo82148.com/ja/">
+  <link rel="alternate" hreflang="en" href="https://webntp.shogo82148.com/en/">
+  <link rel="alternate" hreflang="x-default" href="https://webntp.shogo82148.com/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/style.css?v=3">
+</head>
+<body>
+  <!-- ===== nav ===== -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="./">
+        <span class="logo" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        </span>
+        Web<b>NTP</b>
+      </a>
+      <div class="nav-links">
+        <a href="./api.html">API</a>
+        <a href="https://github.com/shogo82148/go-webntp" target="_blank" rel="noopener">GitHub ↗</a>
+        <a href="../ja/" class="lang-switch" hreflang="ja">日本語</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== digital clock demo ===== -->
+  <main class="clock-stage">
+    <div class="clock-intro">
+      <p class="eyebrow">NTP over HTTP / WebSocket</p>
+      <p class="clock-tagline">Sync to <span class="accent">accurate time</span> from the browser.</p>
+    </div>
+
+    <div class="panel clock-card" id="demo">
+      <p class="tz"><span id="sync-dot" class="dot"></span> <span id="tz-name">Your time zone</span></p>
+      <div class="clock">
+        <time id="time" datetime="">00:00:00</time><span id="milliseconds" aria-label="milliseconds">000</span>
+      </div>
+      <p id="date">Fetching time…</p>
+      <div class="clock-stats">
+        <div class="stat"><p class="k">Offset</p><p class="v" id="stat-offset">—</p></div>
+        <div class="stat"><p class="k">Round-trip delay</p><p class="v" id="stat-delay">—</p></div>
+        <div class="stat"><p class="k">Server</p><p class="v" id="stat-server" style="font-size:.8rem">—</p></div>
+      </div>
+      <p class="sync-row"><span id="sync-status">Connecting…</span></p>
+    </div>
+
+    <p class="clock-hint">
+      Synced over WebSocket to the public server <code class="inline">webntp.shogo82148.com</code>.
+      For a live demo of each protocol and full details, see the <a href="./api.html">API reference</a>.
+    </p>
+  </main>
+
+  <!-- ===== footer ===== -->
+  <footer class="site">
+    <div class="wrap foot-inner">
+      <div>© 2026 ICHINOSE Shogo — Released under the MIT License</div>
+      <div class="foot-links">
+        <a href="./api.html">API</a>
+        <a href="https://github.com/shogo82148/go-webntp" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://pkg.go.dev/github.com/shogo82148/go-webntp" target="_blank" rel="noopener">pkg.go.dev</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../assets/webntp.js?v=3"></script>
+  <script src="../assets/clock.js?v=4"></script>
+</body>
+</html>

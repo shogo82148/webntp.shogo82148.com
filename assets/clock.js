@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------------
    clock.js — drives the landing-page live demo:
    a WebNTP-synchronised digital clock (Japan Standard Time) with live
-   offset / delay / server-id readouts.
+   offset / delay / server-id readouts. Localised via <html lang>.
 --------------------------------------------------------------------------- */
 (function () {
   "use strict";
@@ -10,9 +10,25 @@
   const HOST = "webntp.shogo82148.com";
   const WS_URL = `wss://${HOST}/websocket`;
 
+  const LANG = (document.documentElement.lang || "ja").startsWith("en") ? "en" : "ja";
+  const LOCALE = LANG === "en" ? "en-US" : "ja-JP";
+  const T = {
+    ja: {
+      syncing: "同期中…",
+      synced: "WebSocket で同期済み",
+      retry: (s) => `再接続まで ${s}秒`,
+    },
+    en: {
+      syncing: "Syncing…",
+      synced: "Synced over WebSocket",
+      retry: (s) => `Reconnecting in ${s}s`,
+    },
+  }[LANG];
+
   const timeEl = document.getElementById("time");
   const msEl = document.getElementById("milliseconds");
   const dateEl = document.getElementById("date");
+  const tzEl = document.getElementById("tz-name");
   const statusEl = document.getElementById("sync-status");
   const dotEl = document.getElementById("sync-dot");
   const offsetEl = document.getElementById("stat-offset");
@@ -26,12 +42,28 @@
   let retryDelay = 1000;
   let synced = false;
 
-  const timeFmt = new Intl.DateTimeFormat("ja-JP", {
-    timeZone: "Asia/Tokyo", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
+  // Format in the viewer's own local time zone (no fixed timeZone option).
+  const timeFmt = new Intl.DateTimeFormat(LOCALE, {
+    hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false,
   });
-  const dateFmt = new Intl.DateTimeFormat("ja-JP", {
-    timeZone: "Asia/Tokyo", year: "numeric", month: "long", day: "numeric", weekday: "short",
+  const dateFmt = new Intl.DateTimeFormat(LOCALE, {
+    year: "numeric", month: "long", day: "numeric", weekday: "short",
   });
+
+  // Show the local time zone's friendly name (falls back to the IANA id).
+  function localZoneLabel() {
+    const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    try {
+      const parts = new Intl.DateTimeFormat(LOCALE, { timeZoneName: "long" }).formatToParts(new Date());
+      const name = parts.find((p) => p.type === "timeZoneName");
+      if (name && name.value) return name.value;
+    } catch (e) { /* ignore */ }
+    return zone;
+  }
+  if (tzEl) {
+    tzEl.textContent = localZoneLabel();
+    tzEl.title = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  }
 
   function render() {
     const now = new Date(Date.now() + offset);
@@ -69,13 +101,13 @@
   }
 
   function synchronize() {
-    if (!synced) setStatus("同期中…", "live");
+    if (!synced) setStatus(T.syncing, "live");
     getServerTime()
       .then((result) => {
         offset = result.offset;
         retryDelay = 1000;
         synced = true;
-        setStatus("WebSocket で同期済み", "live");
+        setStatus(T.synced, "live");
         if (offsetEl) offsetEl.innerHTML = fmtMs(result.offset);
         if (delayEl) delayEl.innerHTML = fmtMs(result.delay);
         if (serverEl && result.response) serverEl.textContent = result.response.id;
@@ -86,7 +118,7 @@
         const retryAt = Date.now() + wait;
         const tick = () => {
           const s = Math.max(0, Math.ceil((retryAt - Date.now()) / 1000));
-          setStatus(`再接続まで ${s}秒`, "err");
+          setStatus(T.retry(s), "err");
         };
         tick();
         const iv = setInterval(tick, 250);
