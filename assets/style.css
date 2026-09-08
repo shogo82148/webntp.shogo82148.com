@@ -157,40 +157,39 @@ h2.section-title {
   backdrop-filter: blur(16px);
 }
 
-/* ---- hero + clock ---------------------------------------------------------- */
-.hero { padding-top: clamp(2.5rem, 6vw, 4rem); }
-.hero-grid {
-  display: grid;
-  grid-template-columns: 1.05fr 1fr;
-  gap: clamp(1.5rem, 4vw, 3rem);
+/* ---- clock stage (landing page) -------------------------------------------- */
+.clock-stage {
+  position: relative;
+  z-index: 1;
+  min-height: calc(100svh - 60px);
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  gap: clamp(1.4rem, 3vw, 2.2rem);
+  width: min(92vw, 720px);
+  margin-inline: auto;
+  padding: clamp(2rem, 5vw, 3.5rem) 0;
+  text-align: center;
 }
-@media (max-width: 860px) { .hero-grid { grid-template-columns: 1fr; } }
-
-.hero h1 {
-  margin: 0 0 1.1rem;
-  font-size: clamp(2.4rem, 6.4vw, 4rem);
-  line-height: 1.04;
-  letter-spacing: -0.035em;
+.clock-intro { display: grid; justify-items: center; gap: 0.4rem; }
+.clock-intro .eyebrow { margin: 0; }
+.clock-tagline {
+  margin: 0;
+  font-size: clamp(1.15rem, 3.4vw, 1.7rem);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
 }
-.hero h1 .grad {
-  background: linear-gradient(120deg, var(--accent), #b8fff0 60%, var(--accent-dim));
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-}
-.hero p.lead { margin: 0 0 1.8rem; max-width: 46ch; color: var(--muted); font-size: 1.1rem; }
-.hero-cta { display: flex; flex-wrap: wrap; gap: 0.8rem; }
-.badges { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.8rem; }
-.badge {
-  font-family: var(--mono);
-  font-size: 0.72rem;
+.clock-stage .clock-card { width: 100%; text-align: left; }
+.clock-hint {
+  margin: 0;
+  max-width: 46ch;
   color: var(--muted);
-  padding: 0.32rem 0.7rem;
-  border: 1px solid var(--line-soft);
-  border-radius: 999px;
+  font-size: 0.9rem;
 }
-.badge b { color: var(--accent); font-weight: 600; }
 
-/* clock card */
+/* ---- clock card ------------------------------------------------------------ */
 .clock-card { padding: clamp(1.6rem, 3vw, 2.2rem); }
 .clock-card .tz {
   display: flex; align-items: center; gap: 0.6rem;
@@ -228,19 +227,6 @@ h2.section-title {
 @keyframes pulse { 50% { opacity: 0.4; } }
 @media (prefers-reduced-motion: reduce) { .dot.live { animation: none; } }
 
-/* ---- feature cards --------------------------------------------------------- */
-.cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-@media (max-width: 820px) { .cards { grid-template-columns: 1fr; } }
-.card { padding: 1.5rem; }
-.card .icon {
-  width: 40px; height: 40px; border-radius: 10px;
-  display: grid; place-items: center; margin-bottom: 1rem;
-  border: 1px solid var(--line); color: var(--accent);
-  background: rgba(116, 249, 197, 0.05);
-}
-.card h3 { margin: 0 0 0.45rem; font-size: 1.1rem; letter-spacing: -0.01em; }
-.card p { margin: 0; color: var(--muted); font-size: 0.94rem; }
-
 /* ---- code blocks ----------------------------------------------------------- */
 .code {
   position: relative;
@@ -276,17 +262,6 @@ code.inline {
 .tok-s { color: var(--accent); }       /* string */
 .tok-n { color: #f7c66b; }             /* number */
 .tok-p { color: var(--muted); }        /* punctuation */
-
-/* ---- quickstart steps ------------------------------------------------------ */
-.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-@media (max-width: 820px) { .steps { grid-template-columns: 1fr; } }
-.step { padding: 1.4rem; }
-.step .num {
-  font-family: var(--mono); font-size: 0.8rem; color: var(--accent);
-  border: 1px solid var(--line); border-radius: 8px;
-  width: 2rem; height: 2rem; display: grid; place-items: center; margin-bottom: 0.9rem;
-}
-.step h3 { margin: 0 0 0.6rem; font-size: 1rem; }
 
 /* ---- playground ------------------------------------------------------------ */
 .pg { padding: clamp(1.4rem, 3vw, 2rem); }

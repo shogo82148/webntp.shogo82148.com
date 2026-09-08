@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./assets/style.css?v=1">
+  <link rel="stylesheet" href="./assets/style.css?v=2">
 </head>
 <body>
   <!-- ===== nav ===== -->
@@ -22,8 +22,7 @@
         Web<b>NTP</b>
       </a>
       <div class="nav-links">
-        <a href="./#demo" class="hide-sm">デモ</a>
-        <a href="./#quickstart" class="hide-sm">導入</a>
+        <a href="./">デモ</a>
         <a href="./api.html" class="active">API 仕様</a>
         <a href="https://github.com/shogo82148/go-webntp" target="_blank" rel="noopener">GitHub ↗</a>
       </div>
@@ -44,6 +43,7 @@
         <h4>目次</h4>
         <nav class="toc-list">
           <a href="#overview">概要</a>
+          <a href="#playground">ブラウザから試す</a>
           <a href="#fields">レスポンスフィールド</a>
           <a href="#json">JSON over HTTP</a>
           <a href="#websocket">WebSocket</a>
@@ -68,6 +68,25 @@
                 <tr><td>HEAD /.well-known/time</td><td>HTTPS</td><td>ヘッダーで時刻を返す（軽量）</td></tr>
               </tbody>
             </table>
+          </div>
+        </div>
+
+        <!-- playground -->
+        <div class="api-block">
+          <h2 id="playground">ブラウザから試す</h2>
+          <p>このページを配信している公開サーバー <code class="inline">webntp.shogo82148.com</code> に対して、3 つのプロトコルを実際に呼び出せます。レスポンスと、そこから計算したオフセット・往復遅延が表示されます。</p>
+          <div class="panel pg">
+            <div class="pg-tabs">
+              <button class="pg-tab" data-mode="json">JSON over HTTP</button>
+              <button class="pg-tab" data-mode="ws">WebSocket</button>
+              <button class="pg-tab" data-mode="header">Time over HTTPS</button>
+            </div>
+            <p class="pg-endpoint" id="pg-endpoint"></p>
+            <p class="pg-desc" id="pg-desc"></p>
+            <div class="pg-run">
+              <button class="btn primary" id="pg-run">実行 ▸</button>
+            </div>
+            <pre class="pg-out" id="pg-out">「実行」を押すと結果がここに表示されます。</pre>
           </div>
         </div>
 
@@ -212,17 +231,7 @@ offset = st - end + delay / 2</code></pre>
     </div>
   </footer>
 
-  <script>
-    // copy buttons (standalone for this page)
-    document.querySelectorAll(".copy-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const code = btn.closest(".code").querySelector("code");
-        navigator.clipboard.writeText(code ? code.innerText : "").then(() => {
-          const old = btn.textContent; btn.textContent = "copied!";
-          setTimeout(() => { btn.textContent = old; }, 1200);
-        });
-      });
-    });
-  </script>
+  <script src="./assets/webntp.js?v=2"></script>
+  <script src="./assets/playground.js?v=2"></script>
 </body>
 </html>

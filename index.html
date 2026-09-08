@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#030707">
   <title>WebNTP — HTTP/WebSocket 越しの時刻同期</title>
-  <meta name="description" content="WebNTP は HTTP / WebSocket 越しに時刻を配信する NTP ライクなサービスです。ブラウザからサーバー時刻に同期するデジタル時計のライブデモを試せます。">
+  <meta name="description" content="WebNTP は HTTP / WebSocket 越しに時刻を配信する NTP ライクなサービスです。ブラウザからサーバー時刻に同期するデジタル時計のライブデモ。">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./assets/style.css?v=1">
+  <link rel="stylesheet" href="./assets/style.css?v=2">
 </head>
 <body>
   <!-- ===== nav ===== -->
@@ -22,143 +22,38 @@
         Web<b>NTP</b>
       </a>
       <div class="nav-links">
-        <a href="#demo" class="hide-sm">デモ</a>
-        <a href="#quickstart" class="hide-sm">導入</a>
-        <a href="#protocols">プロトコル</a>
         <a href="./api.html">API 仕様</a>
         <a href="https://github.com/shogo82148/go-webntp" target="_blank" rel="noopener">GitHub ↗</a>
       </div>
     </div>
   </nav>
 
-  <!-- ===== hero ===== -->
-  <header class="hero wrap">
-    <div class="hero-grid">
-      <div>
-        <p class="eyebrow">NTP over HTTP / WebSocket</p>
-        <h1>ブラウザから<br><span class="grad">正確な時刻</span>に<br>同期する。</h1>
-        <p class="lead">
-          WebNTP は HTTP・WebSocket 越しに時刻を配信する NTP ライクなサービスです。
-          ファイアウォールの内側でも、ブラウザからでも、標準的な Web プロトコルだけでサーバー時刻に同期できます。
-        </p>
-        <div class="hero-cta">
-          <a class="btn primary" href="#quickstart">はじめる</a>
-          <a class="btn" href="https://github.com/shogo82148/go-webntp" target="_blank" rel="noopener">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2A10 10 0 0 0 8.84 21.5c.5.08.66-.22.66-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.9-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.9 1.52 2.34 1.08 2.91.83.1-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.16.57.67.48A10 10 0 0 0 12 2Z"/></svg>
-            ソースコード
-          </a>
-        </div>
-        <div class="badges">
-          <span class="badge">MIT License</span>
-          <span class="badge"><b>go install</b> で導入</span>
-          <span class="badge">3 つのプロトコル</span>
-          <span class="badge">閏秒メタデータ対応</span>
-        </div>
-      </div>
-
-      <!-- live clock demo -->
-      <div id="demo" class="panel clock-card">
-        <p class="tz"><span id="sync-dot" class="dot"></span> Japan Standard Time</p>
-        <div class="clock">
-          <time id="time" datetime="">00:00:00</time><span id="milliseconds" aria-label="ミリ秒">000</span>
-        </div>
-        <p id="date">時刻を取得しています…</p>
-        <div class="clock-stats">
-          <div class="stat"><p class="k">オフセット</p><p class="v" id="stat-offset">—</p></div>
-          <div class="stat"><p class="k">往復遅延</p><p class="v" id="stat-delay">—</p></div>
-          <div class="stat"><p class="k">サーバー</p><p class="v" id="stat-server" style="font-size:.8rem">—</p></div>
-        </div>
-        <p class="sync-row"><span id="sync-status">接続中…</span></p>
-      </div>
+  <!-- ===== digital clock demo ===== -->
+  <main class="clock-stage">
+    <div class="clock-intro">
+      <p class="eyebrow">NTP over HTTP / WebSocket</p>
+      <p class="clock-tagline">ブラウザから<span class="accent">正確な時刻</span>に同期する。</p>
     </div>
-  </header>
 
-  <!-- ===== features ===== -->
-  <section class="wrap">
-    <p class="eyebrow">Why WebNTP</p>
-    <h2 class="section-title">Web だけで完結する時刻同期</h2>
-    <p class="section-lead">従来の NTP は UDP/123 を使うため、制限の厳しいネットワークやブラウザからは扱えません。WebNTP は普段の HTTP/HTTPS をそのまま使います。</p>
-    <div class="cards">
-      <div class="panel card">
-        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 12h20M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/><circle cx="12" cy="12" r="10"/></svg></div>
-        <h3>どこからでも</h3>
-        <p>ポート 80/443 だけで動作。ファイアウォールやプロキシの内側、ブラウザからでも時刻を取得できます。</p>
+    <div class="panel clock-card" id="demo">
+      <p class="tz"><span id="sync-dot" class="dot"></span> Japan Standard Time</p>
+      <div class="clock">
+        <time id="time" datetime="">00:00:00</time><span id="milliseconds" aria-label="ミリ秒">000</span>
       </div>
-      <div class="panel card">
-        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2 3 14h7l-1 8 10-12h-7z"/></svg></div>
-        <h3>低遅延・高精度</h3>
-        <p>WebSocket なら接続を張ったまま往復遅延を測定。NTP と同じ手法でクロックオフセットを補正します。</p>
+      <p id="date">時刻を取得しています…</p>
+      <div class="clock-stats">
+        <div class="stat"><p class="k">オフセット</p><p class="v" id="stat-offset">—</p></div>
+        <div class="stat"><p class="k">往復遅延</p><p class="v" id="stat-delay">—</p></div>
+        <div class="stat"><p class="k">サーバー</p><p class="v" id="stat-server" style="font-size:.8rem">—</p></div>
       </div>
-      <div class="panel card">
-        <div class="icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M8 4v16"/></svg></div>
-        <h3>3 つの方式</h3>
-        <p>JSON over HTTP・WebSocket・Time over HTTPS ヘッダー。用途に応じて最適なプロトコルを選べます。</p>
-      </div>
+      <p class="sync-row"><span id="sync-status">接続中…</span></p>
     </div>
-  </section>
 
-  <!-- ===== quickstart ===== -->
-  <section id="quickstart" class="wrap">
-    <p class="eyebrow">Quick start</p>
-    <h2 class="section-title">3 ステップで動かす</h2>
-    <p class="section-lead">Go さえあればサーバーもクライアントもすぐに立ち上がります。</p>
-    <div class="steps">
-      <div class="panel step">
-        <div class="num">1</div>
-        <h3>インストール</h3>
-        <div class="code">
-          <div class="code-head"><span class="lamp"></span><span class="name">shell</span><button class="copy-btn">copy</button></div>
-          <pre class="code-body"><code>go install github.com/shogo82148/go-webntp/cmd/webntp@latest</code></pre>
-        </div>
-      </div>
-      <div class="panel step">
-        <div class="num">2</div>
-        <h3>サーバーを起動</h3>
-        <div class="code">
-          <div class="code-head"><span class="lamp"></span><span class="name">shell</span><button class="copy-btn">copy</button></div>
-          <pre class="code-body"><code>webntp -serve :8080</code></pre>
-        </div>
-      </div>
-      <div class="panel step">
-        <div class="num">3</div>
-        <h3>時刻に同期</h3>
-        <div class="code">
-          <div class="code-head"><span class="lamp"></span><span class="name">shell</span><button class="copy-btn">copy</button></div>
-          <pre class="code-body"><code>webntp ws://localhost:8080/websocket</code></pre>
-        </div>
-      </div>
-    </div>
-    <div class="panel" style="margin-top:1rem">
-      <div class="code" style="border:none;background:transparent">
-        <div class="code-head"><span class="lamp"></span><span class="name">同期結果の例</span></div>
-        <pre class="code-body"><code><span class="tok-p">{</span><span class="tok-s">"msg"</span><span class="tok-p">:</span><span class="tok-s">"best time"</span><span class="tok-p">,</span> <span class="tok-s">"server"</span><span class="tok-p">:</span><span class="tok-s">"ws://localhost:8080/websocket"</span><span class="tok-p">,</span> <span class="tok-s">"offset"</span><span class="tok-p">:</span><span class="tok-n">0.000008</span><span class="tok-p">,</span> <span class="tok-s">"delay"</span><span class="tok-p">:</span><span class="tok-n">0.000212</span><span class="tok-p">}</span></code></pre>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== protocols + playground ===== -->
-  <section id="protocols" class="wrap">
-    <p class="eyebrow">Protocols</p>
-    <h2 class="section-title">ブラウザから試す</h2>
-    <p class="section-lead">
-      このサイト自身が公開 WebNTP サーバー <code class="inline">webntp.shogo82148.com</code> で動いています。
-      下のプレイグラウンドで実際のレスポンスを確認できます。詳細は <a href="./api.html">API 仕様</a> をご覧ください。
+    <p class="clock-hint">
+      WebSocket で公開サーバー <code class="inline">webntp.shogo82148.com</code> に同期しています。
+      各プロトコルを試せるライブデモと詳細は <a href="./api.html">API 仕様</a> をご覧ください。
     </p>
-
-    <div class="panel pg">
-      <div class="pg-tabs">
-        <button class="pg-tab" data-mode="json">JSON over HTTP</button>
-        <button class="pg-tab" data-mode="ws">WebSocket</button>
-        <button class="pg-tab" data-mode="header">Time over HTTPS</button>
-      </div>
-      <p class="pg-endpoint" id="pg-endpoint"></p>
-      <p class="pg-desc" id="pg-desc"></p>
-      <div class="pg-run">
-        <button class="btn primary" id="pg-run">実行 ▸</button>
-      </div>
-      <pre class="pg-out" id="pg-out">「実行」を押すと結果がここに表示されます。</pre>
-    </div>
-  </section>
+  </main>
 
   <!-- ===== footer ===== -->
   <footer class="site">
@@ -172,7 +67,7 @@
     </div>
   </footer>
 
-  <script src="./assets/webntp.js?v=1"></script>
-  <script src="./assets/clock.js?v=1"></script>
+  <script src="./assets/webntp.js?v=2"></script>
+  <script src="./assets/clock.js?v=2"></script>
 </body>
 </html>
