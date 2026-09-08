@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#030707">
+  <title>API 仕様 — WebNTP</title>
+  <meta name="description" content="WebNTP の API 仕様。JSON over HTTP・WebSocket・Time over HTTPS の各エンドポイント、レスポンスフィールド、時刻同期アルゴリズムを解説します。">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./assets/style.css?v=2">
+</head>
+<body>
+  <!-- ===== nav ===== -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a class="brand" href="./">
+        <span class="logo" aria-hidden="true">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        </span>
+        Web<b>NTP</b>
+      </a>
+      <div class="nav-links">
+        <a href="./">デモ</a>
+        <a href="./api.html" class="active">API 仕様</a>
+        <a href="https://github.com/shogo82148/go-webntp" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+    </div>
+  </nav>
+
+  <section class="wrap">
+    <p class="eyebrow">API Reference</p>
+    <h2 class="section-title">WebNTP API 仕様</h2>
+    <p class="section-lead">
+      WebNTP は 3 つのプロトコルで時刻を配信します。いずれもレスポンスは共通の JSON フォーマット
+      （Time over HTTPS を除く）で、クライアントは往復遅延からクロックオフセットを算出します。
+    </p>
+
+    <div class="api-layout">
+      <!-- TOC -->
+      <aside class="toc">
+        <h4>目次</h4>
+        <nav class="toc-list">
+          <a href="#overview">概要</a>
+          <a href="#playground">ブラウザから試す</a>
+          <a href="#fields">レスポンスフィールド</a>
+          <a href="#json">JSON over HTTP</a>
+          <a href="#websocket">WebSocket</a>
+          <a href="#https-time">Time over HTTPS</a>
+          <a href="#algorithm">同期アルゴリズム</a>
+          <a href="#leap">閏秒について</a>
+          <a href="#cors">CORS</a>
+        </nav>
+      </aside>
+
+      <div>
+        <!-- overview -->
+        <div class="api-block">
+          <h2 id="overview">概要</h2>
+          <p>公開サーバーのベース URL は <code class="inline">https://webntp.shogo82148.com</code> です。自前でサーバーを立てる場合は <code class="inline">webntp -serve :8080</code> で起動します。エンドポイントは次の 3 つです。</p>
+          <div class="wrap-scroll">
+            <table class="fields">
+              <thead><tr><th>メソッド / パス</th><th>プロトコル</th><th>用途</th></tr></thead>
+              <tbody>
+                <tr><td>GET /json</td><td>HTTP</td><td>JSON でサーバー時刻を返す</td></tr>
+                <tr><td>GET /websocket</td><td>WebSocket</td><td>接続を張ったまま時刻を送受信</td></tr>
+                <tr><td>HEAD /.well-known/time</td><td>HTTPS</td><td>ヘッダーで時刻を返す（軽量）</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- playground -->
+        <div class="api-block">
+          <h2 id="playground">ブラウザから試す</h2>
+          <p>このページを配信している公開サーバー <code class="inline">webntp.shogo82148.com</code> に対して、3 つのプロトコルを実際に呼び出せます。レスポンスと、そこから計算したオフセット・往復遅延が表示されます。</p>
+          <div class="panel pg">
+            <div class="pg-tabs">
+              <button class="pg-tab" data-mode="json">JSON over HTTP</button>
+              <button class="pg-tab" data-mode="ws">WebSocket</button>
+              <button class="pg-tab" data-mode="header">Time over HTTPS</button>
+            </div>
+            <p class="pg-endpoint" id="pg-endpoint"></p>
+            <p class="pg-desc" id="pg-desc"></p>
+            <div class="pg-run">
+              <button class="btn primary" id="pg-run">実行 ▸</button>
+            </div>
+            <pre class="pg-out" id="pg-out">「実行」を押すと結果がここに表示されます。</pre>
+          </div>
+        </div>
+
+        <!-- fields -->
+        <div class="api-block">
+          <h2 id="fields">レスポンスフィールド</h2>
+          <p><code class="inline">/json</code> と <code class="inline">/websocket</code> が返す JSON は共通です。タイムスタンプはすべて Unix エポック秒（小数で秒未満を表現）です。</p>
+          <div class="wrap-scroll">
+            <table class="fields">
+              <thead><tr><th>フィールド</th><th>型</th><th>説明</th></tr></thead>
+              <tbody>
+                <tr><td>id</td><td>string</td><td>サーバーのホスト名。</td></tr>
+                <tr><td>it</td><td>number</td><td>Initiate Time — クライアントが送信したリクエスト時刻。送らなかった場合は 0。</td></tr>
+                <tr><td>st</td><td>number</td><td>Send Time — サーバーが応答を送信した時刻。</td></tr>
+                <tr><td>time</td><td>number</td><td>サーバー時刻。<code class="inline">st</code> と同じ値（後方互換のためのフィールド）。</td></tr>
+                <tr><td>leap</td><td>number</td><td>TAI − UTC の秒数（<code class="inline">next</code> より前の値）。</td></tr>
+                <tr><td>next</td><td>number</td><td>次回、または直近の閏秒のタイムスタンプ。</td></tr>
+                <tr><td>step</td><td>number</td><td>閏秒の方向。正の閏秒: 1、負の閏秒: −1。</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- JSON over HTTP -->
+        <div class="api-block">
+          <h2 id="json">JSON over HTTP</h2>
+          <p class="method-line"><span class="verb">GET</span> <span class="path">/json?&lt;timestamp&gt;</span></p>
+          <p>クエリ文字列にクライアントの送信時刻（エポック秒）を渡すと、サーバーはそれを <code class="inline">it</code> に反映して返します。クエリを省略すると <code class="inline">it</code> は 0 になります。</p>
+          <div class="code">
+            <div class="code-head"><span class="lamp"></span><span class="name">request</span><button class="copy-btn">copy</button></div>
+            <pre class="code-body"><code>curl -s 'https://webntp.shogo82148.com/json?1788697606.057'</code></pre>
+          </div>
+          <div class="code" style="margin-top:.8rem">
+            <div class="code-head"><span class="lamp"></span><span class="name">response · 200 application/json</span></div>
+            <pre class="code-body"><code><span class="tok-p">{</span>
+  <span class="tok-s">"id"</span><span class="tok-p">:</span> <span class="tok-s">"webntp.shogo82148.com"</span><span class="tok-p">,</span>
+  <span class="tok-s">"it"</span><span class="tok-p">:</span> <span class="tok-n">1788697606.057</span><span class="tok-p">,</span>
+  <span class="tok-s">"st"</span><span class="tok-p">:</span> <span class="tok-n">1788697671.734335</span><span class="tok-p">,</span>
+  <span class="tok-s">"time"</span><span class="tok-p">:</span> <span class="tok-n">1788697671.734335</span><span class="tok-p">,</span>
+  <span class="tok-s">"leap"</span><span class="tok-p">:</span> <span class="tok-n">36</span><span class="tok-p">,</span>
+  <span class="tok-s">"next"</span><span class="tok-p">:</span> <span class="tok-n">1483228800</span><span class="tok-p">,</span>
+  <span class="tok-s">"step"</span><span class="tok-p">:</span> <span class="tok-n">1</span>
+<span class="tok-p">}</span></code></pre>
+          </div>
+        </div>
+
+        <!-- WebSocket -->
+        <div class="api-block">
+          <h2 id="websocket">WebSocket</h2>
+          <p class="method-line"><span class="verb">WS</span> <span class="path">/websocket</span></p>
+          <p>サブプロトコル <code class="inline">webntp.shogo82148.com</code> で接続します。テキストフレームでタイムスタンプ（エポック秒）を送ると、同じ JSON フォーマットで応答が返ります。接続を維持したまま複数回問い合わせでき、最も高精度な同期が可能です。無通信が続くとサーバー側から切断されます。</p>
+          <div class="code">
+            <div class="code-head"><span class="lamp"></span><span class="name">wscat</span><button class="copy-btn">copy</button></div>
+            <pre class="code-body"><code><span class="tok-c">$ wscat --connect wss://webntp.shogo82148.com/websocket \
+    --subprotocol webntp.shogo82148.com</span>
+<span class="tok-p">></span> <span class="tok-n">1558915619.944235</span>
+<span class="tok-p">&lt;</span> <span class="tok-p">{</span><span class="tok-s">"id"</span><span class="tok-p">:</span><span class="tok-s">"webntp.shogo82148.com"</span><span class="tok-p">,</span><span class="tok-s">"it"</span><span class="tok-p">:</span><span class="tok-n">1558915619.944235</span><span class="tok-p">,</span><span class="tok-s">"st"</span><span class="tok-p">:</span><span class="tok-n">1558916776.363423</span><span class="tok-p">,</span> <span class="tok-c">…</span><span class="tok-p">}</span></code></pre>
+          </div>
+          <div class="callout">
+            <span>▹</span>
+            <div>ブラウザからは <code class="inline">new WebSocket(url, ["webntp.shogo82148.com"])</code> のように<b>サブプロトコルの指定が必須</b>です。指定しないとハンドシェイクに失敗します。</div>
+          </div>
+          <div class="code">
+            <div class="code-head"><span class="lamp"></span><span class="name">JavaScript</span><button class="copy-btn">copy</button></div>
+            <pre class="code-body"><code><span class="tok-k">const</span> conn = <span class="tok-k">new</span> WebSocket(
+  <span class="tok-s">"wss://webntp.shogo82148.com/websocket"</span>,
+  [<span class="tok-s">"webntp.shogo82148.com"</span>]
+);
+conn.onopen = () => conn.send((Date.now() / <span class="tok-n">1000</span>).toString());
+conn.onmessage = (ev) => {
+  <span class="tok-k">const</span> r = JSON.parse(ev.data);
+  <span class="tok-k">const</span> end = Date.now();
+  <span class="tok-k">const</span> delay = end - r.it * <span class="tok-n">1000</span>;
+  <span class="tok-k">const</span> offset = r.st * <span class="tok-n">1000</span> - end + delay / <span class="tok-n">2</span>;
+  console.log(<span class="tok-s">"offset"</span>, offset, <span class="tok-s">"ms"</span>);
+};</code></pre>
+          </div>
+        </div>
+
+        <!-- Time over HTTPS -->
+        <div class="api-block">
+          <h2 id="https-time">Time over HTTPS</h2>
+          <p class="method-line"><span class="verb head">HEAD</span> <span class="path">/.well-known/time</span></p>
+          <p>ボディを持たず、レスポンスヘッダー <code class="inline">X-Httpstime</code> にサーバー時刻（エポック秒）を入れて返します。FreeBSD の <a href="https://phk.freebsd.dk/time/20151129/" target="_blank" rel="noopener">Time over HTTPS specification</a> に基づく、最も軽量な方式です。</p>
+          <div class="code">
+            <div class="code-head"><span class="lamp"></span><span class="name">request / response</span><button class="copy-btn">copy</button></div>
+            <pre class="code-body"><code><span class="tok-c">$ curl -I https://webntp.shogo82148.com/.well-known/time</span>
+HTTP/1.1 <span class="tok-n">204</span> No Content
+Access-Control-Allow-Origin: *
+Access-Control-Expose-Headers: X-Httpstime
+Cache-Control: no-cache
+<span class="tok-s">X-Httpstime</span>: <span class="tok-n">1788697967.925993</span></code></pre>
+          </div>
+        </div>
+
+        <!-- algorithm -->
+        <div class="api-block">
+          <h2 id="algorithm">同期アルゴリズム</h2>
+          <p>クライアントは NTP と同じ考え方で、往復遅延を測ってクロックオフセットを推定します。送信時刻 <code class="inline">it</code>、応答受信時刻 <code class="inline">end</code>、サーバー送信時刻 <code class="inline">st</code> から次のように計算します。</p>
+          <div class="code">
+            <div class="code-head"><span class="lamp"></span><span class="name">計算式</span></div>
+            <pre class="code-body"><code><span class="tok-c"># 往復遅延（ネットワークの往復にかかった時間）</span>
+delay  = end - it
+
+<span class="tok-c"># クロックオフセット（サーバー時刻 − クライアント時刻）</span>
+<span class="tok-c"># 遅延の半分を片道分として補正する</span>
+offset = st - end + delay / 2</code></pre>
+          </div>
+          <p>推定した <code class="inline">offset</code> をローカル時計に足すことで、サーバーに同期した時刻が得られます。往復遅延が小さいほど推定精度は高くなるため、WebSocket が最も有利です。</p>
+        </div>
+
+        <!-- leap -->
+        <div class="api-block">
+          <h2 id="leap">閏秒について</h2>
+          <p>レスポンスの <code class="inline">leap</code> / <code class="inline">next</code> / <code class="inline">step</code> は閏秒に関するメタデータです。閏秒は将来的に廃止が予定されていますが、後方互換のため、直近に挿入された閏秒（2017-01-01 の正の閏秒、TAI − UTC = 36 秒）の情報を返し続けます。</p>
+          <div class="callout">
+            <span>▹</span>
+            <div>本仕様は NICT（情報通信研究機構）の <a href="https://jjy.nict.go.jp/QandA/reference/http-archive.html" target="_blank" rel="noopener">http/https を利用した時刻配信</a> のドキュメントを参考にしています。</div>
+          </div>
+        </div>
+
+        <!-- CORS -->
+        <div class="api-block">
+          <h2 id="cors">CORS</h2>
+          <p>すべてのエンドポイントは <code class="inline">Access-Control-Allow-Origin: *</code> を返すため、任意のオリジンのブラウザから利用できます。Time over HTTPS では <code class="inline">Access-Control-Expose-Headers: X-Httpstime</code> により、JavaScript からヘッダーを読み取れます。応答はいずれも <code class="inline">Cache-Control: no-cache</code> でキャッシュされません。</p>
+        </div>
+
+        <p style="margin-top:2rem"><a class="btn" href="./">← トップに戻る</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== footer ===== -->
+  <footer class="site">
+    <div class="wrap foot-inner">
+      <div>© 2026 ICHINOSE Shogo — Released under the MIT License</div>
+      <div class="foot-links">
+        <a href="./">トップ</a>
+        <a href="https://github.com/shogo82148/go-webntp" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://pkg.go.dev/github.com/shogo82148/go-webntp" target="_blank" rel="noopener">pkg.go.dev</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="./assets/webntp.js?v=2"></script>
+  <script src="./assets/playground.js?v=2"></script>
+</body>
+</html>
