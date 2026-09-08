@@ -1,0 +1,35 @@
+name: Deploy archive to S3
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: ${{ github.workflow }}
+  queue: max
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Create archive
+        run: git archive --format=tar HEAD -- . ':(exclude).github' | gzip --no-name > webntp.shogo82148.com.tar.gz
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@cbe3b392738ccf3f987d68400dafcf4b0624a56c # v6.2.4
+        with:
+          aws-region: ap-northeast-1
+          role-to-assume: arn:aws:iam::445285296882:role/GitHubActionsWebntpDeploy
+
+      - name: Upload archive to S3
+        run: aws s3 cp webntp.shogo82148.com.tar.gz s3://shogo82148-server-deploy/webntp.shogo82148.com.tar.gz
